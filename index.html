@@ -7,191 +7,85 @@
                 margin : 0px;
             }
         </style>
-        <BODY>
-            <script>
-                var road;
-                var background;
-                var mini;
-                var score_text;
-                var score=0;
-                var woman;
-                var woman2;
-                var theif;
-                var bullet;
-                var bullets;
-                var bang;
-                var pause_label;
-                var bye;
-
-                var game=new Phaser.Game(window.innerWidth,window.innerHeight,Phaser.CANVAS,'road-rash',{preload:preload, create : create,update:update,render:render})
-        
-                function preload(){
-
-                    game.load.image('road','road2.png')
-                    game.load.image('background','background.png')
-                    game.load.image('mini','mini.png');
-                    game.load.image('theif','theif.png');
-                    game.load.image('bullet','bomb.png');
-                    game.load.spritesheet('woman','sheet.png',189,230,14);
-                    game.load.spritesheet('woman2','sheet.png',189,230,14);
-                    game.load.audio('bang','bang.wav');
-                    game.load.audio('bye','bye.wav');
-                }
-
-                function create(){
-                    
-
-                    game.physics.startSystem(Phaser.Physics.ARCADE);
-                    game.physics.setBoundsToWorld();
-                    background = game.add.tileSprite(0,0,window.innerWidth,window.innerHeight,'background');
-
-                    road = game.add.tileSprite(300,0,window.innerWidth/2+90,window.innerHeight,'road');
-
-                    score_text=game.add.text(100,100,"SCORE : 0",{fill : "#ffffff"});
-
-
-                    mini=game.add.sprite(window.innerWidth/2,window.innerHeight-50,'mini');
-                    mini.anchor.set(0.5,0.5);
-                    mini.scale.setTo(0.5);
-
-                    game.physics.arcade.enable(mini);
-                    mini.checkWorldBounds = true;
-                    mini.events.onOutOfBounds.add(miniOut, this); 
-
-
-                    woman=game.add.sprite(0,200,'woman');
-                    woman.animations.add('naach');
-                    woman.animations.play('naach',14,true);
-
-                    game.physics.arcade.enable(woman);
-                    woman.body.velocity.x=50;
-                    woman.scale.setTo(0.5);
-                    woman.checkWorldBounds = true;
-                    woman.events.onOutOfBounds.add(womanOut, this); 
-
-
-                    woman2=game.add.sprite(window.innerWidth,50,'woman2');
-                    woman2.animations.add('naach1');
-                    woman2.animations.play('naach1',14,true);
-
-                    game.physics.arcade.enable(woman2);
-                    woman2.body.velocity.x=-50;
-                    woman2.scale.setTo(0.5);
-                    woman.checkWorldBounds = true;
-                    woman.events.onOutOfBounds.add(Woman2Out, this); 
-
-
-                    theif=game.add.sprite(75,40,'theif');
-                    theif.anchor.set(0.5,0.5);
-                    theif.scale.setTo(0.5);
-
-                    game.physics.arcade.enable(theif);
-                    theif.body.mass=-10000;
-                    theif.checkWorldBounds = true;
-                    theif.events.onOutOfBounds.add(theifOut, this); 
-
-                    bullets=game.add.group();
-                    bang=game.add.audio('bang');
-                    bye=game.add.audio('bye');
-                    cursors=game.input.keyboard.createCursorKeys();
-
-                    
-
-                    
-                }
-                function theifOut(theif) {
-                    theif.reset(0, 40);
-                    theif.body.velocity.x = +75;
-                }
-                function womanOut(w) {
-                    w.reset(0, 200);
-                    w.body.velocity.x = +50;
-                }
-                function Woman2Out(w) {
-                    w.reset(window.innerWidth,50);
-                    w.body.velocity.x = -50;
-                }
-                function miniOut(w) {
-                    w.reset(window.innerWidth/2,window.innerHeight-50);
-                    w.body.velocity.x = -100;
-                }
-
-                function render(){
-                    if(cursors.up.isDown){
-                    shoot();
-                    }
-
-                    if(cursors.left.isDown){
-                        mini.body.velocity.x=-100;
-                    }
-                    if(cursors.right.isDown){
-                        mini.body.velocity.x=+100;
-                    }
-
-                }
-
-                function update(){
-                    road.tilePosition.y += 5;
-
-                    //mini.body.velocity.x=20*(game.input.x - mini.x);
-                    //mini.body.velocity.y=20*(game.input.y - mini.y);
-
-                    theif.body.velocity.x=+75;
-
-                    game.physics.arcade.collide(bullet,theif,bullet_check,bullet_process,this);
-                    game.physics.arcade.collide(woman,bullet,bullet_check1,bullet_process1,this);
-                    game.physics.arcade.collide(woman2,bullet,bullet_check1,bullet_process1,this);
-                
-
-                    score_text.setText("SCORE : "+score);
-
-                    
-
-
-                }
-                function shoot(){
-                    
-                    let x=Math.cos((mini.angle - 90)*Math.PI/180)
-                    let y=Math.sin((mini.angle - 90)*Math.PI/180)
-                    bullet = bullets.create(mini.x+x*50,mini.y+y*50,'bullet');
-                   
-                    bullet.anchor.set(0.5,0.5);
-                    bullet.scale.setTo(0.5);
-                    game.physics.arcade.enable(bullet);
-                    bullet.body.bounce.x=0.5;
-                    bullet.body.bounce.y=0.5; 
-
-                    bullet.body.velocity.x = 1000*x;
-                    bullet.body.velocity.y = 1000*y;
-                    bang.play();
-
-                }
-              
-                function bullet_check(m,b){
-                    return true;
-                }
-
-                function bullet_process(m,b){
-                    //sprite.body.immovable = true;
-                    score++;
-
-                }
-                function bullet_check1(w,b){
-                    return true;
-                }
-
-                function bullet_process1(w,b){
-                    bye.play();
-                    pause_label = game.add.text(window.innerWidth/2-150,window.innerHeight/2, 'GAME OVER :(', { font: '65px Arial', fill: '#124184' });
-                    pause_label.inputEnabled = true;
-                    pause_label.events.onInputUp.add(function () {
-                        game.paused = true;
-                    });
-                   
-                   // game.debug.text("Game Over",500,500);
-                }
-            
-            </script>
-        </BODY>
     </HEAD>
+    <BODY>
+        <script>
+            var player;
+            var space;
+            var coins;
+            var score=0;
+            var game=new Phaser.Game(window.innerWidth,window.innerHeight,Phaser.CANVAS,'first-game',{preload:preload, create : create,update:update,render:render})
+            
+            function preload(){
+                game.load.image('jet','jet.png');
+                game.load.image('space','starfield.png');
+                game.load.image('coin','coin.png');
+            }
+
+            function create(){
+               //Archade phyiscs
+               game.physics.startSystem(Phaser.Physics.ARCADE);
+
+               space = game.add.tileSprite(0,0,window.innerWidth,window.innerHeight,'space');
+
+              
+               player=game.add.sprite(200,200,'jet');
+                player.anchor.set(0.5,0.5);
+               // console.log(game.add);
+               //console.log(player);
+
+               game.physics.arcade.enable(player);
+
+               coins=game.add.group();
+               for(let i=0;i<10;i++){
+                   coin = coins.create(game.rnd.between(0,window.innerWidth),game.rnd.between(0,window.innerHeight),'coin');
+                   
+                   coin.anchor.set(0.5,0.5);
+                   game.physics.arcade.enable(coin);
+                   coin.body.mass=-1000; 
+               }
+
+            }
+
+            function update(){
+                //player.y=player.y+1;
+                //player.x=game.input.x;
+                //player.y=game.input.y;
+
+                game.physics.arcade.collide(player,coins,handler,processer,this);
+
+                player.body.velocity.x=4*(game.input.x - player.x);
+                player.body.velocity.y=4*(game.input.y - player.y);
+
+                space.tilePosition.y += 5;
+
+                degree = Math.atan((game.input.y - player.y)/(game.input.x - player.x))*180 / Math.PI
+
+                player.angle=degree;
+
+
+
+
+
+            }
+            function render(){
+                game.debug.text("score :"+score,100,100)
+            }
+
+            function handler(p,c){
+
+                return true;
+
+            }
+
+            function processer(p,c){
+                console.log("BooM");
+
+                score++;
+                c.x=game.rnd.between(0,window.innerWidth);
+                c.y=game.rnd.between(0,window.innerHeight);
+            }
+        
+        </script>
+    </BODY>
 </HTML>
